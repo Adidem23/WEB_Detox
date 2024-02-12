@@ -9,7 +9,7 @@
   let wallet: BeaconWallet;
   const walletOptions = {
     name: "Create NFTs",
-    preferredNetwork: NetworkType.GHOSTNET
+    preferredNetwork: NetworkType.GHOSTNET,
   };
   let userAddress: string;
   let files, title, description;
@@ -40,7 +40,7 @@
     const getTokenIds = await nftStorage.reverse_ledger.get(address);
     if (getTokenIds) {
       userNfts = await Promise.all([
-        ...getTokenIds.map(async id => {
+        ...getTokenIds.map(async (id) => {
           const tokenId = id.toNumber();
           const metadata = await nftStorage.token_metadata.get(tokenId);
           const tokenInfoBytes = metadata.token_info.get("");
@@ -48,9 +48,9 @@
           return {
             tokenId,
             ipfsHash:
-              tokenInfo.slice(0, 7) === "ipfs://" ? tokenInfo.slice(7) : null
+              tokenInfo.slice(0, 7) === "ipfs://" ? tokenInfo.slice(7) : null,
           };
-        })
+        }),
       ]);
     }
   };
@@ -64,8 +64,8 @@
       await wallet.requestPermissions({
         network: {
           type: NetworkType.GHOSTNET,
-          rpcUrl
-        }
+          rpcUrl,
+        },
       });
       userAddress = await wallet.getPKH();
       Tezos.setWalletProvider(wallet);
@@ -93,9 +93,9 @@
       const response = await fetch(`${serverUrl}/mint`, {
         method: "POST",
         headers: {
-          "Access-Control-Allow-Origin": "*"
+          "Access-Control-Allow-Origin": "*",
         },
-        body: data
+        body: data,
       });
       if (response) {
         const data = await response.json();
@@ -117,7 +117,7 @@
           newNft = {
             imageHash: data.msg.imageHash,
             metadataHash: data.msg.metadataHash,
-            opHash: op.opHash
+            opHash: op.opHash,
           };
 
           files = undefined;
@@ -152,57 +152,9 @@
   });
 </script>
 
-<style lang="scss">
-  $tezos-blue: #2e7df7;
-
-  h1 {
-    font-size: 3rem;
-    font-family: "Roman-SD";
-  }
-
-  button {
-    padding: 20px;
-    font-size: 1rem;
-    border: solid 3px #d1d5db;
-    background-color: #e5e7eb;
-    border-radius: 10px;
-    cursor: pointer;
-  }
-
-  .roman {
-    text-transform: uppercase;
-    font-family: "Roman-SD";
-    font-weight: bold;
-  }
-
-  .container {
-    font-size: 1.3rem;
-    & > div {
-      padding: 20px;
-    }
-
-    label {
-      display: flex;
-      flex-direction: column;
-      text-align: left;
-    }
-
-    input,
-    textarea {
-      padding: 10px;
-    }
-
-    .user-nfts {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-  }
-</style>
-
 <main>
   <div class="container">
-    <h1>Create NFTs</h1>
+    <h1>Mint NFTS</h1>
     {#if userAddress}
       <div>
         <div class="user-nfts">
@@ -223,7 +175,7 @@
           {/if}
         </div>
         <br />
-        <button class="roman" on:click={disconnect}>Disconnect</button>
+        <button id="NFTBut" class="roman" on:click={disconnect}>Disconnect</button>
       </div>
       {#if newNft}
         <div>Your NFT has been successfully minted!</div>
@@ -255,7 +207,7 @@
           </a>
         </div>
         <div>
-          <button class="roman" on:click={() => (newNft = undefined)}>
+          <button id="NFTBut" class="roman" on:click={() => (newNft = undefined)}>
             Mint a new NFT
           </button>
         </div>
@@ -283,17 +235,132 @@
         </div>
         <div>
           {#if pinningMetadata}
-            <button class="roman"> Saving your image... </button>
+            <button id="NFTBut" class="roman"> Saving your image... </button>
           {:else if mintingToken}
-            <button class="roman"> Minting your NFT... </button>
+            <button id="NFTBut" class="roman"> Minting your NFT... </button>
           {:else}
-            <button class="roman" on:click={upload}> Mint NFT </button>
+            <button id="NFTBut" class="roman" on:click={upload}> Mint NFT </button>
           {/if}
         </div>
       {/if}
     {:else}
-      <div class="roman">Create an NFT with your pictures</div>
-      <button class="roman" on:click={connect}>Connect your wallet</button>
+      <!-- <div class="roman">Create an NFT with your pictures</div> -->
+      <button  id="NFTBut" class="roman" on:click={connect}>Connect your wallet</button>
     {/if}
   </div>
 </main>
+
+<style lang="scss">
+  $tezos-blue: #2e7df7;
+
+  h1 {
+    font-size: 3rem;
+    font-family: "Roman-SD";
+  }
+
+
+  // This is for the NFT Button
+  #NFTBut {
+    display: inline-block;
+    transition: all 0.2s ease-in;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    color: #090909;
+    padding: 0.7em 1.7em;
+    cursor: pointer;
+    font-size: 18px;
+    border-radius: 0.5em;
+    background: #e8e8e8;
+    border: 1px solid #e8e8e8;
+    box-shadow:
+      6px 6px 12px #c5c5c5,
+      -6px -6px 12px #ffffff;
+  }
+
+  #NFTBut:active {
+    color: #666;
+    box-shadow:
+      inset 4px 4px 12px #c5c5c5,
+      inset -4px -4px 12px #ffffff;
+  }
+
+  #NFTBut:before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) scaleY(1) scaleX(1.25);
+    top: 100%;
+    width: 140%;
+    height: 180%;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 50%;
+    display: block;
+    transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+    z-index: -1;
+  }
+
+  #NFTBut:after {
+    content: "";
+    position: absolute;
+    left: 55%;
+    transform: translateX(-50%) scaleY(1) scaleX(1.45);
+    top: 180%;
+    width: 160%;
+    height: 190%;
+    background-color: #2e7df7;
+    border-radius: 50%;
+    display: block;
+    transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+    z-index: -1;
+  }
+
+  #NFTBut:hover {
+    color: #ffffff;
+    border: 1px solid #2e7df7;
+  }
+
+  #NFTBut:hover:before {
+    top: -35%;
+    background-color: #2e7df7;
+    transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+  }
+
+  #NFTBut:hover:after {
+    top: -45%;
+    background-color: #2e7df7;
+    transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+  }
+
+  // This is for the End of the NFT Button
+
+  .roman {
+    text-transform: uppercase;
+    font-family: "Roman-SD";
+    font-weight: bold;
+  }
+
+  .container {
+    font-size: 1.3rem;
+    & > div {
+      padding: 20px;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    input,
+    textarea {
+      padding: 10px;
+    }
+
+    .user-nfts {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+</style>
